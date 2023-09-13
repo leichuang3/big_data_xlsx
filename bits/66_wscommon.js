@@ -148,7 +148,7 @@ function XmlReader(){
 	this.xmlIndex = 0;
 	this.xml = '';
 	this.xp = !1;
-	this.reset()= function(){
+	this.reset = function(){
 		var e = this;
 		e.mp = -1;
 		e.np = 0;
