@@ -15243,6 +15243,463 @@ function check_ws(ws/*:Worksheet*/, sname/*:string*/, i/*:number*/) {
 		if(range.e.c < range.s.c || range.e.r < range.s.r) throw new Error("Bad range (" + i + "): " + ws['!ref']);
 	}
 }
+function XmlReader(){
+	const a = '<![CDATA[';
+	const o = ']]>';
+	const l = null;
+	this.mp = -1;
+	this.np = 0;
+	this.op = 0;
+	this.pp = 0;
+	this.buffer = '';
+	this.elementType = 2;
+	this.depth = 0;
+	this.rn = 0;
+	this._l = 0;
+	this.qp = 0;
+	this.rp = 0;
+	this.tp = 0;
+	this.vp = 0;
+	this.lp = 0;
+	this.wp = 0;
+	this.xmlIndex = 0;
+	this.xml = '';
+	this.xp = !1;
+	this.reset = function(){
+		var e = this;
+		e.mp = -1;
+		e.np = 0;
+		e.op = 0;
+		e.pp = 0;
+		e.buffer = '';
+		e.elementType = 2;
+		e.depth = 0;
+		e.rn = 0;
+		e._l = 0;
+		e.qp = 0;
+		e.rp = 0;
+		e.tp = 0;
+		e.vp = 0;
+		e.lp = 0;
+		e.wp = 0;
+		e.xmlIndex = 0;
+		e.xml = '';
+		e.xp = !1;
+		e.yp = 0;
+		e.zp = '';
+	}
+	this.setXml = function (e) {
+		this.xml = e
+	  }
+	this.name = function () {
+		var e,
+		  t = this,
+		  r = t.buffer.slice(t.rn, t.rn + t._l)
+		return r && !t.keepRootNamespace
+		  ? ((e = r.lastIndexOf(':') + 1),
+			(e === t.yp && r.substr(0, e) === t.zp) || (e = 0),
+			r.substr(e))
+		  : r
+	  }
+	  this.nodeType = function () {
+		return 2 === this.elementType ? 15 : 1
+	  }
+	  this.fillBuffer = function () {
+		var e = this,
+		  t = e.buffer.length
+		return (
+		  0 === t && ((e.buffer = e.xml), (e.mp = 0), (e.lp = 0), (e.op = e.buffer.length), !0)
+		)
+	  }
+	  this.read = function () {
+		var e,
+		  t,
+		  r,
+		  i,
+		  n,
+		  l,
+		  s,
+		  c,
+		  u,
+		  d,
+		  f,
+		  p = this
+		for (p.np = Number.MAX_VALUE, p.xp = !1; ; ) {
+		  if ((p.mp++, p.mp >= p.op && !p.fillBuffer())) return !1
+		  if (((e = p.buffer[p.mp]), '<' === e)) break
+		}
+		for (
+		  t = [
+			'elementStarting',
+			'elementStart',
+			'elementNameEnd',
+			'elementEnd',
+			'elementContent',
+			'elementContentStart',
+			'endElementStart'
+		  ],
+			r = t.length,
+			i = 0,
+			n = !1;
+		  i < r;
+
+		)
+		  switch (t[i]) {
+			case 'elementStarting':
+			  for (n = !1; ; ) {
+				if ((p.mp++, (e = p.buffer[p.mp]), '/' === e)) {
+				  ;(i = 6), (n = !0)
+				  break
+				}
+				if ('?' === e) {
+				  for (p.elementType = 3; ; )
+					if ((p.mp++, (e = p.buffer[p.mp]), '>' === e)) return !0
+				} else if (' ' !== e && '\r' !== e && '\n' !== e && '\t' !== e) {
+				  p.rn = p.mp
+				  break
+				}
+			  }
+			  if (n) continue
+			case 'elementStart':
+			  for (n = !1, 1 === p.elementType && p.depth++; ; ) {
+				if ((p.mp++, (e = p.buffer[p.mp]), '>' === e)) {
+				  ;(p._l = p.mp - p.rn), (i = 3), (n = !0)
+				  break
+				}
+				if (' ' === e || '\r' === e || '\n' === e || '\t' === e || '/' === e) {
+				  ;(p._l = p.mp - p.rn), (p.np = p.mp)
+				  break
+				}
+			  }
+			  if (
+				(0 === p.depth &&
+				  !p.keepRootNamespace &&
+				  p._l &&
+				  ((l = p.buffer.substr(p.rn, p._l)),
+				  (s = l.lastIndexOf(':') + 1),
+				  s && ((p.zp = l.substr(0, s)), (p.yp = s))),
+				n)
+			  )
+				continue
+			case 'elementNameEnd':
+			  for (c = !1; ; )
+				if ((p.mp++, (e = p.buffer[p.mp]), '"' === e && (c = !c), !c && '>' === e)) break
+			  for (u = p.mp; ; ) {
+				if ((u--, (e = p.buffer[u]), '/' === e))
+				  return (p.pp = u), (p.elementType = 3), !0
+				if (' ' !== e && '\r' !== e && '\n' !== e && '\t' !== e) {
+				  ;(p.pp = u), (p.elementType = 1), (i = 4)
+				  break
+				}
+			  }
+			  continue
+			case 'elementEnd':
+			  for (u = p.mp; ; ) {
+				if ((u--, (e = p.buffer[u]), '/' === e)) return (p.elementType = 3), !0
+				if (' ' !== e && '\r' !== e && '\n' !== e && '\t' !== e) {
+				  p.elementType = 1
+				  break
+				}
+			  }
+			case 'elementContent':
+			  for (d = !1; ; ) {
+				if ((p.mp++, (e = p.buffer[p.mp]), p.buffer.substr(p.mp, 9) === a))
+				  return (
+					(f = p.buffer.indexOf(o, p.mp)),
+					(p.lp = p.mp),
+					(p.wp = f + o.length),
+					(p.mp = p.wp - 1),
+					(p.xp = !0),
+					!0
+				  )
+				if ('<' === e) return p.mp--, d && (p.wp = p.mp + 1), !0
+				if (((p.lp = p.mp), (d = !0), '\r' !== e && '\n' !== e && '\t' !== e)) break
+			  }
+			case 'elementContentStart':
+			  for (;;)
+				if ((p.mp++, (e = p.buffer[p.mp]), '<' === e)) return (p.wp = p.mp), p.mp--, !0
+			case 'endElementStart':
+			  for (
+				(2 !== p.elementType && 3 !== p.elementType) || p.depth--,
+				  p.elementType = 2,
+				  p.rn = p.mp + 1;
+				;
+
+			  )
+				if ((p.mp++, (e = p.buffer[p.mp]), '>' === e)) return (p._l = p.mp - p.rn), !0
+		  }
+	  }
+	  this.fastRead = function () {
+		var e,
+		  t,
+		  r,
+		  i,
+		  n,
+		  l,
+		  s,
+		  c,
+		  u,
+		  d = this
+		for (d.np = Number.MAX_VALUE, d.xp = !1; ; ) {
+		  if ((d.mp++, d.mp >= d.op && !d.fillBuffer())) return !1
+		  if (((e = d.buffer[d.mp]), '<' === e)) break
+		}
+		for (
+		  t = [
+			'elementStarting',
+			'elementStart',
+			'elementNameEnd',
+			'elementEnd',
+			'elementContent',
+			'elementContentStart',
+			'endElementStart'
+		  ],
+			r = 0,
+			i = !1;
+		  r < t.length;
+
+		)
+		  switch (t[r]) {
+			case 'elementStarting':
+			  for (i = !1; ; ) {
+				if ((d.mp++, (e = d.buffer[d.mp]), '/' === e)) {
+				  ;(r = 6), (i = !0)
+				  break
+				}
+				if (' ' !== e && '\r' !== e && '\n' !== e && '\t' !== e) {
+				  d.rn = d.mp
+				  break
+				}
+			  }
+			  if (i) continue
+			case 'elementStart':
+			  for (i = !1, 1 === d.elementType && d.depth++; ; ) {
+				if ((d.mp++, (e = d.buffer[d.mp]), '>' === e)) {
+				  ;(d._l = d.mp - d.rn), (r = 3), (i = !0)
+				  break
+				}
+				if (' ' === e || '\r' === e || '\n' === e || '\t' === e) {
+				  ;(d._l = d.mp - d.rn), (d.np = d.mp)
+				  break
+				}
+			  }
+			  if (
+				(0 === d.depth &&
+				  !d.keepRootNamespace &&
+				  d._l &&
+				  ((n = d.buffer.substr(d.rn, d._l)),
+				  (l = n.lastIndexOf(':') + 1),
+				  l && ((d.zp = n.substr(0, l)), (d.yp = l))),
+				i)
+			  )
+				continue
+			case 'elementNameEnd':
+			  for (s = !1; ; )
+				if ((d.mp++, (e = d.buffer[d.mp]), '"' === e && (s = !s), !s && '>' === e)) break
+			  for (c = d.mp; ; ) {
+				if ((c--, (e = d.buffer[c]), '/' === e))
+				  return (d.pp = c), (d.elementType = 3), !0
+				if (' ' !== e && '\r' !== e && '\n' !== e && '\t' !== e) {
+				  ;(d.pp = c), (d.elementType = 1), (r = 4)
+				  break
+				}
+			  }
+			  continue
+			case 'elementEnd':
+			  for (c = d.mp; ; ) {
+				if ((c--, (e = d.buffer[c]), '/' === e)) return (d.elementType = 3), !0
+				if (' ' !== e && '\r' !== e && '\n' !== e && '\t' !== e) {
+				  d.elementType = 1
+				  break
+				}
+			  }
+			case 'elementContent':
+			  for (;;) {
+				if ((d.mp++, (e = d.buffer[d.mp]), d.buffer.substr(d.mp, 9) === a))
+				  return (
+					(u = d.buffer.indexOf(o, d.mp)),
+					(d.lp = d.mp),
+					(d.wp = u + o.length),
+					(d.mp = d.wp - 1),
+					(d.xp = !0),
+					!0
+				  )
+				if ('<' === e) return d.mp--, !0
+				if ('\r' !== e && '\n' !== e && '\t' !== e) {
+				  d.lp = d.mp
+				  break
+				}
+			  }
+			case 'elementContentStart':
+			  for (;;)
+				if ((d.mp++, (e = d.buffer[d.mp]), '<' === e)) return (d.wp = d.mp), d.mp--, !0
+			case 'endElementStart':
+			  for (
+				(2 !== d.elementType && 3 !== d.elementType) || d.depth--, d.elementType = 2;
+				;
+
+			  )
+				if ((d.mp++, (e = d.buffer[d.mp]), '>' === e)) return !0
+		  }
+	  }
+	  this.moveToNextAttribute = function () {
+		for (var e, t, r = this; ; ) {
+		  if (r.np >= r.pp - 1) return !1
+		  if (
+			(r.np++, (e = r.buffer[r.np]), ' ' !== e && '\r' !== e && '\n' !== e && '\t' !== e)
+		  ) {
+			r.qp = r.np
+			break
+		  }
+		}
+		for (;;)
+		  if (
+			(r.np++,
+			(e = r.buffer[r.np]),
+			'=' === e || ' ' === e || '\r' === e || '\n' === e || '\t' === e)
+		  ) {
+			r.rp = r.np - r.qp
+			break
+		  }
+		for (t = '"'; ; )
+		  if ((r.np++, (e = r.buffer[r.np]), '"' === e || "'" === e)) {
+			;(t = e), (r.tp = r.np + 1)
+			break
+		  }
+		for (;;) if ((r.np++, (e = r.buffer[r.np]), e === t)) return (r.vp = r.np), !0
+	  }
+	  this.readContentAsString = function () {
+		var e = this
+		return e.buffer.slice(e.tp, e.vp)
+	  }
+	  this.readContentAsBoolean = function (e) {
+		var t = this,
+		  r = t.buffer[t.tp]
+		return '1' === r || 't' === r || ('0' !== r && 'f' !== r && e)
+	  }
+	  this.readContentAsInt = function (e) {
+		var t = this,
+		  r = parseInt(t.buffer.slice(t.tp, t.vp), 10)
+		return isNaN(r) ? e : r
+	  }
+	  this.readContentAsDouble = function (e) {
+		var t = this,
+		  r = parseFloat(t.buffer.slice(t.tp, t.vp))
+		return isNaN(r) ? e : r
+	  }
+	  this.readContentAsError = function () {
+		var e = this.readContentAsString(),
+		  t = l
+		switch (e) {
+		  case '#DIV/0!':
+			t = 7
+			break
+		  case '#N/A':
+			t = 42
+			break
+		  case '#NAME?':
+			t = 29
+			break
+		  case '#NULL!':
+			t = 0
+			break
+		  case '#NUM!':
+			t = 36
+			break
+		  case '#REF!':
+			t = 23
+			break
+		  case '#VALUE!':
+			t = 15
+			break
+		  case '#SPILL!':
+			t = 99
+		}
+		return t !== l ? { _error: e, _code: t } : l
+	  }
+	  this.readElementContentAsString = function (e) {
+		var t,
+		  r,
+		  i,
+		  l = this,
+		  s = l.lp
+		if (this.lp <= this.rn) return ''
+		if (e)
+		  for (t = l.buffer, r = t[s - 1]; ' ' === r || '\r' === r || '\n' === r || '\t' === r; )
+			s--, (r = t[s - 1])
+		return (
+		  (i = l.buffer.slice(s, l.wp)),
+		  l.xp && ((i = n(i.replace(a, '').replace(o, ''))), (l.xp = !1)),
+		  i
+		)
+	  }
+	  this.readElementContentAsInt = function (e) {
+		var t = this,
+		  r = parseInt(t.buffer.slice(t.lp, t.wp), 10)
+		return isNaN(r) ? e : r
+	  }
+	  this.readElementContentAsDouble = function (e) {
+		var t = this,
+		  r = parseFloat(t.buffer.slice(t.lp, t.wp))
+		return isNaN(r) ? e : r
+	  };
+	  this.readElementContentAsBoolean = function (e) {
+		var t = this,
+		  r = t.buffer[t.lp]
+		return '1' === r || 't' === r || ('0' !== r && 'f' !== r && e)
+	  }
+	  this.readAttributeNameAsString = function () {
+		var e = this
+		return e.buffer.slice(e.qp, e.qp + e.rp)
+	  }
+	  this.readFullElement = function () {
+		var e,
+		  t,
+		  r = this
+		if (2 === r.elementType) return ''
+		if (((e = r.rn - 1), 3 === r.elementType)) return r.buffer.slice(e, r.pp + 2)
+		if (((t = r.depth), 1 === r.elementType)) {
+		  for (; r.read() && !(r.depth <= t); );
+		  return r.buffer.slice(e, r.rn + r._l + 1)
+		}
+		return ''
+	  }
+}
+function a(e, t) {
+for (var r, i, n, o = e.depth; e.read() && !(e.depth <= o); )
+	if (1 === e.nodeType()) {
+	for (
+		r = {},
+		i = e.name(),
+		t[i] ? (Array.isArray(t[i]) || (t[i] = [t[i]]), t[i].push(r)) : (t[i] = r),
+		r._attr = {};
+		e.moveToNextAttribute();
+
+	)
+		r._attr[e.readAttributeNameAsString()] = e.readContentAsString()
+	if (3 === e.elementType) continue
+	;(n = e.readElementContentAsString()),
+		1 === (1 & e.elementType) &&
+		'' !== n &&
+		e.lp > e.rn &&
+		('preserve' === r._attr['xml:space'] && (n = e.readElementContentAsString(!0)),
+		(r[i] = n)),
+		a(e, r)
+	}
+}
+  
+function parseXmlToObject(e) {
+var r, n, o
+if (e) {
+	for (r = new XmlReader(), n = {}, r.reset(), r.setXml(e); r.read(); )
+	if (2 !== r.elementType) {
+		for (o = {}, o._attr = {}, n[r.name()] = o; r.moveToNextAttribute(); )
+		o._attr[r.readAttributeNameAsString()] = r.readContentAsString()
+		3 !== r.elementType && a(r, o)
+	}
+	return n
+}
+}
 function parse_ws_xml_dim(ws/*:Worksheet*/, s/*:string*/) {
 	var d = safe_decode_range(s);
 	if(d.s.r<=d.e.r && d.s.c<=d.e.c && d.s.r>=0 && d.s.c>=0) ws["!ref"] = encode_range(d);
@@ -15300,7 +15757,7 @@ function parse_ws_xml(data/*:?string*/, opts, idx/*:number*/, rels, wb/*:WBWBPro
 	}
 
 	/* 18.3.1.80 sheetData CT_SheetData ? */
-	if(mtch) parse_ws_xml_data(mtch[1], s, opts, refguess, themes, styles);
+	if(mtch) parse_ws_xml_data(mtch[0], s, opts, refguess, themes, styles);
 
 	/* 18.3.1.2  autoFilter CT_AutoFilter */
 	var afilter = data2.match(afregex);
@@ -15553,131 +16010,44 @@ function write_ws_xml_cell(cell/*:Cell*/, ref, ws, opts/*::, idx, wb*/)/*:string
 }
 
 var parse_ws_xml_data = /*#__PURE__*/(function() {
-	var cellregex = /<(?:\w+:)?c[ \/>]/, rowregex = /<\/(?:\w+:)?row>/;
-	var rregex = /r=["']([^"']*)["']/, isregex = /<(?:\w+:)?is>([\S\s]*?)<\/(?:\w+:)?is>/;
-	var refregex = /ref=["']([^"']*)["']/;
-	var match_v = matchtag("v"), match_f = matchtag("f");
 
 return function parse_ws_xml_data(sdata/*:string*/, s, opts, guess/*:Range*/, themes, styles) {
-	var ri = 0, x = "", cells/*:Array<string>*/ = [], cref/*:?Array<string>*/ = [], idx=0, i=0, cc=0, d="", p/*:any*/;
-	var tag, tagr = 0, tagc = 0;
-	var sstr, ftag;
+	var cells = [];
+	var sstr;
 	var fmtid = 0, fillid = 0;
 	var do_format = Array.isArray(styles.CellXf), cf;
-	var arrayf/*:Array<[Range, string]>*/ = [];
-	var sharedf = [];
 	var dense = Array.isArray(s);
-	var rows/*:Array<RowInfo>*/ = [], rowobj = {}, rowrite = false;
+	var rows = [];
 	var sheetStubs = !!opts.sheetStubs;
-	for(var marr = sdata.split(rowregex), mt = 0, marrlen = marr.length; mt != marrlen; ++mt) {
-		x = marr[mt].trim();
-		var xlen = x.length;
-		if(xlen === 0) continue;
+	const xmlObj = parseXmlToObject(sdata)
+	const { row } = xmlObj.sheetData
+	for(let i = 0; i<row.length; i++){
+		cells = row[i].c;
+		for(let j = 0; j<cells.length; j++){
+			const p = ({t:""});
+			const item = cells[j];
 
-		/* 18.3.1.73 row CT_Row */
-		var rstarti = 0;
-		outa: for(ri = 0; ri < xlen; ++ri) switch(/*x.charCodeAt(ri)*/x[ri]) {
-			case ">" /*62*/:
-				if(/*x.charCodeAt(ri-1) != 47*/x[ri-1] != "/") { ++ri; break outa; }
-				if(opts && opts.cellStyles) {
-					// TODO: avoid duplication
-					tag = parsexmltag(x.slice(rstarti,ri), true);
-					tagr = tag.r != null ? parseInt(tag.r, 10) : tagr+1; tagc = -1;
-					if(opts.sheetRows && opts.sheetRows < tagr) continue;
-					rowobj = {}; rowrite = false;
-					if(tag.ht) { rowrite = true; rowobj.hpt = parseFloat(tag.ht); rowobj.hpx = pt2px(rowobj.hpt); }
-					if(tag.hidden && parsexmlbool(tag.hidden)) { rowrite = true; rowobj.hidden = true; }
-					if(tag.outlineLevel != null) { rowrite = true; rowobj.level = +tag.outlineLevel; }
-					if(rowrite) rows[tagr-1] = rowobj;
-				}
-				break;
-			case "<" /*60*/: rstarti = ri; break;
-		}
-		if(rstarti >= ri) break;
-		tag = parsexmltag(x.slice(rstarti,ri), true);
-		tagr = tag.r != null ? parseInt(tag.r, 10) : tagr+1; tagc = -1;
-		if(opts.sheetRows && opts.sheetRows < tagr) continue;
-		if(guess.s.r > tagr - 1) guess.s.r = tagr - 1;
-		if(guess.e.r < tagr - 1) guess.e.r = tagr - 1;
-
-		if(opts && opts.cellStyles) {
-			rowobj = {}; rowrite = false;
-			if(tag.ht) { rowrite = true; rowobj.hpt = parseFloat(tag.ht); rowobj.hpx = pt2px(rowobj.hpt); }
-			if(tag.hidden && parsexmlbool(tag.hidden)) { rowrite = true; rowobj.hidden = true; }
-			if(tag.outlineLevel != null) { rowrite = true; rowobj.level = +tag.outlineLevel; }
-			if(rowrite) rows[tagr-1] = rowobj;
-		}
-
-		/* 18.3.1.4 c CT_Cell */
-		cells = x.slice(ri).split(cellregex);
-		for(var rslice = 0; rslice != cells.length; ++rslice) if(cells[rslice].trim().charAt(0) != "<") break;
-		cells = cells.slice(rslice);
-		for(ri = 0; ri != cells.length; ++ri) {
-			x = cells[ri].trim();
-			if(x.length === 0) continue;
-			cref = x.match(rregex); idx = ri; i=0; cc=0;
-			x = "<c " + (x.slice(0,1)=="<"?">":"") + x;
-			if(cref != null && cref.length === 2) {
-				idx = 0; d=cref[1];
-				for(i=0; i != d.length; ++i) {
-					if((cc=d.charCodeAt(i)-64) < 1 || cc > 26) break;
-					idx = 26*idx + cc;
-				}
-				--idx;
-				tagc = idx;
-			} else ++tagc;
-			for(i = 0; i != x.length; ++i) if(x.charCodeAt(i) === 62) break; ++i;
-			tag = parsexmltag(x.slice(0,i), true);
-			if(!tag.r) tag.r = encode_cell({r:tagr-1, c:tagc});
-			d = x.slice(i);
-			p = ({t:""}/*:any*/);
-
-			if((cref=d.match(match_v))!= null && /*::cref != null && */cref[1] !== '') p.v=unescapexml(cref[1]);
-			if(opts.cellFormula) {
-				if((cref=d.match(match_f))!= null && /*::cref != null && */cref[1] !== '') {
-					/* TODO: match against XLSXFutureFunctions */
-					p.f=unescapexml(utf8read(cref[1]), true);
-					if(!opts.xlfn) p.f = _xlfn(p.f);
-					if(/*::cref != null && cref[0] != null && */cref[0].indexOf('t="array"') > -1) {
-						p.F = (d.match(refregex)||[])[1];
-						if(p.F.indexOf(":") > -1) arrayf.push([safe_decode_range(p.F), p.F]);
-					} else if(/*::cref != null && cref[0] != null && */cref[0].indexOf('t="shared"') > -1) {
-						// TODO: parse formula
-						ftag = parsexmltag(cref[0]);
-						var ___f = unescapexml(utf8read(cref[1]));
-						if(!opts.xlfn) ___f = _xlfn(___f);
-						sharedf[parseInt(ftag.si, 10)] = [ftag, ___f, tag.r];
-					}
-				} else if((cref=d.match(/<f[^>]*\/>/))) {
-					ftag = parsexmltag(cref[0]);
-					if(sharedf[ftag.si]) p.f = shift_formula_xlsx(sharedf[ftag.si][1], sharedf[ftag.si][2]/*[0].ref*/, tag.r);
-				}
-				/* TODO: factor out contains logic */
-				var _tag = decode_cell(tag.r);
-				for(i = 0; i < arrayf.length; ++i)
-					if(_tag.r >= arrayf[i][0].s.r && _tag.r <= arrayf[i][0].e.r)
-						if(_tag.c >= arrayf[i][0].s.c && _tag.c <= arrayf[i][0].e.c)
-							p.F = arrayf[i][1];
+			if(item._attr){
+				p.t = item._attr.t || "n"
+			}
+			
+			if(item.v &&  item.v.v){
+				p.v = item.v.v
 			}
 
-			if(tag.t == null && p.v === undefined) {
-				if(p.f || p.F) {
-					p.v = 0; p.t = "n";
-				} else if(!sheetStubs) continue;
+			if(!p.v) {
+				if(!sheetStubs) continue;
 				else p.t = "z";
 			}
-			else p.t = tag.t || "n";
-			if(guess.s.c > tagc) guess.s.c = tagc;
-			if(guess.e.c < tagc) guess.e.c = tagc;
-			/* 18.18.11 t ST_CellType */
 			switch(p.t) {
 				case 'n':
-					if(p.v == "" || p.v == null) {
+					if(!p.v) {
 						if(!sheetStubs) continue;
 						p.t = 'z';
 					} else p.v = parseFloat(p.v);
 					break;
 				case 's':
+				
 					if(typeof p.v == 'undefined') {
 						if(!sheetStubs) continue;
 						p.t = 'z';
@@ -15693,14 +16063,6 @@ return function parse_ws_xml_data(sdata/*:string*/, s, opts, guess/*:Range*/, th
 					p.v = (p.v!=null) ? unescapexml(utf8read(p.v), true) : '';
 					if(opts.cellHTML) p.h = escapehtml(p.v);
 					break;
-				case 'inlineStr':
-					cref = d.match(isregex);
-					p.t = 's';
-					if(cref != null && (sstr = parse_si(cref[1]))) {
-						p.v = sstr.t;
-						if(opts.cellHTML) p.h = sstr.h;
-					} else p.v = "";
-					break;
 				case 'b': p.v = parsexmlbool(p.v); break;
 				case 'd':
 					if(opts.cellDates) p.v = parseDate(p.v, 1);
@@ -15711,11 +16073,12 @@ return function parse_ws_xml_data(sdata/*:string*/, s, opts, guess/*:Range*/, th
 					if(!opts || opts.cellText !== false) p.w = p.v;
 					p.v = RBErr[p.v]; break;
 			}
+			
 			/* formatting */
 			fmtid = fillid = 0;
 			cf = null;
-			if(do_format && tag.s !== undefined) {
-				cf = styles.CellXf[tag.s];
+			if(do_format && p.s !== undefined) {
+				cf = styles.CellXf[p.s];
 				if(cf != null) {
 					if(cf.numFmtId != null) fmtid = cf.numFmtId;
 					if(opts.cellStyles) {
@@ -15725,15 +16088,16 @@ return function parse_ws_xml_data(sdata/*:string*/, s, opts, guess/*:Range*/, th
 			}
 			safe_format(p, fmtid, fillid, opts, themes, styles);
 			if(opts.cellDates && do_format && p.t == 'n' && fmt_is_date(table_fmt[fmtid])) { p.t = 'd'; p.v = numdate(p.v); }
-			if(tag.cm && opts.xlmeta) {
-				var cm = (opts.xlmeta.Cell||[])[+tag.cm-1];
-				if(cm && cm.type == 'XLDAPR') p.D = true;
+		
+			if(!dense){
+				s[item._attr.r] = p
+			}else{
+				if(!s[i]){
+					s[i] = []
+				}
+				s[i][j] = p
 			}
-			if(dense) {
-				var _r = decode_cell(tag.r);
-				if(!s[_r.r]) s[_r.r] = [];
-				s[_r.r][_r.c] = p;
-			} else s[tag.r] = p;
+
 		}
 	}
 	if(rows.length > 0) s['!rows'] = rows;

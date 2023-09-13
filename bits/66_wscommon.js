@@ -460,12 +460,12 @@ function XmlReader(){
 		  r = t.buffer[t.tp]
 		return '1' === r || 't' === r || ('0' !== r && 'f' !== r && e)
 	  }
-	  this.prototype.readContentAsInt = function (e) {
+	  this.readContentAsInt = function (e) {
 		var t = this,
 		  r = parseInt(t.buffer.slice(t.tp, t.vp), 10)
 		return isNaN(r) ? e : r
 	  }
-	  this.prototype.readContentAsDouble = function (e) {
+	  this.readContentAsDouble = function (e) {
 		var t = this,
 		  r = parseFloat(t.buffer.slice(t.tp, t.vp))
 		return isNaN(r) ? e : r
