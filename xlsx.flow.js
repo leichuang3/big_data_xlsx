@@ -1,9 +1,8 @@
 /*! xlsx.js (C) 2013-present SheetJS -- http://sheetjs.com */
 /* vim: set ts=2: */
 /*exported XLSX */
-/*global global, exports, module, require:false, process:false, Buffer:false, ArrayBuffer:false, DataView:false, Deno:false, Set:false */
+/*global process:false, Buffer:false, ArrayBuffer:false, DataView:false, Deno:false */
 var XLSX = {};
-function make_xlsx_lib(XLSX){
 XLSX.version = '0.18.12';
 var current_codepage = 1200, current_ansi = 1252;
 /*:: declare var cptable:any; */
@@ -16092,10 +16091,11 @@ return function parse_ws_xml_data(sdata/*:string*/, s, opts, guess/*:Range*/, th
 			if(!dense){
 				s[item._attr.r] = p
 			}else{
-				if(!s[i]){
-					s[i] = []
+				var { r, c} = decode_cell(item._attr.r);
+				if(!s[r]){
+					s[r] = []
 				}
-				s[i][j] = p
+				s[r][c] = p
 			}
 
 		}
@@ -26902,32 +26902,42 @@ var __stream = {
 	to_csv: write_csv_stream,
 	set_readable: set_readable
 };
-if(typeof parse_xlscfb !== "undefined") XLSX.parse_xlscfb = parse_xlscfb;
-XLSX.parse_zip = parse_zip;
-XLSX.read = readSync; //xlsread
-XLSX.readFile = readFileSync; //readFile
-XLSX.readFileSync = readFileSync;
-XLSX.write = writeSync;
-XLSX.writeFile = writeFileSync;
-XLSX.writeFileSync = writeFileSync;
-XLSX.writeFileAsync = writeFileAsync;
-XLSX.utils = utils;
-XLSX.writeXLSX = writeSyncXLSX;
-XLSX.writeFileXLSX = writeFileSyncXLSX;
-XLSX.SSF = SSF;
-if(typeof __stream !== "undefined") XLSX.stream = __stream;
-if(typeof CFB !== "undefined") XLSX.CFB = CFB;
-if(typeof require !== "undefined") {
-  var strmod = require('stream');
-  if((strmod||{}).Readable) set_readable(strmod.Readable);
-	try { _fs = require('fs'); } catch(e) {}
+export const version = XLSX.version;
+export {
+	parse_xlscfb,
+	parse_zip,
+	readSync as read,
+	readFileSync as readFile,
+	readFileSync,
+	writeSync as write,
+	writeFileSync as writeFile,
+	writeFileSync,
+	writeFileAsync,
+	writeSyncXLSX as writeXLSX,
+	writeFileSyncXLSX as writeFileXLSX,
+	utils,
+	set_fs,
+	set_cptable,
+	__stream as stream,
+	SSF,
+	CFB
+};
+export default {
+	parse_xlscfb,
+	parse_zip,
+	read: readSync,
+	readFile: readFileSync,
+	readFileSync,
+	write: writeSync,
+	writeFile: writeFileSync,
+	writeFileSync,
+	writeFileAsync,
+	writeXLSX: writeSyncXLSX,
+	writeFileXLSX: writeFileSyncXLSX,
+	utils,
+	set_fs,
+	set_cptable,
+	stream: __stream,
+	SSF,
+	CFB
 }
-}
-/*global define */
-/*:: declare var define:any; */
-if(typeof exports !== 'undefined') make_xlsx_lib(exports);
-else if(typeof module !== 'undefined' && module.exports) make_xlsx_lib(module.exports);
-else if(typeof define === 'function' && define.amd) define('xlsx', function() { if(!XLSX.version) make_xlsx_lib(XLSX); return XLSX; });
-else make_xlsx_lib(XLSX);
-/* NOTE: the following extra line is needed for "Lightning Locker Service" */
-if(typeof window !== 'undefined' && !window.XLSX) try { window.XLSX = XLSX; } catch(e) {}

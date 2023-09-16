@@ -15998,10 +15998,11 @@ return function parse_ws_xml_data(sdata, s, opts, guess, themes, styles) {
 			if(!dense){
 				s[item._attr.r] = p
 			}else{
-				if(!s[i]){
-					s[i] = []
+				var { r, c} = decode_cell(item._attr.r);
+				if(!s[r]){
+					s[r] = []
 				}
-				s[i][j] = p
+				s[r][c] = p
 			}
 
 		}

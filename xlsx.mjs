@@ -2,7 +2,8 @@
 /* vim: set ts=2: */
 /*exported XLSX */
 /*global process:false, Buffer:false, ArrayBuffer:false, DataView:false, Deno:false */
-var XLSX = {};XLSX.version = '0.18.12';
+var XLSX = {};
+XLSX.version = '0.18.12';
 var current_codepage = 1200, current_ansi = 1252;
 /*global cptable:true, window */
 var $cptable;
@@ -15194,7 +15195,7 @@ function XmlReader(){
 	}
 	this.setXml = function (e) {
 		this.xml = e
-	}
+	  }
 	this.name = function () {
 		var e,
 		  t = this,
@@ -15996,10 +15997,11 @@ return function parse_ws_xml_data(sdata, s, opts, guess, themes, styles) {
 			if(!dense){
 				s[item._attr.r] = p
 			}else{
-				if(!s[i]){
-					s[i] = []
+				var { r, c} = decode_cell(item._attr.r);
+				if(!s[r]){
+					s[r] = []
 				}
-				s[i][j] = p
+				s[r][c] = p
 			}
 
 		}
